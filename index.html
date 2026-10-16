@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
 ADD OR CHANGE ITEMS:
-1. Add artwork inside a <symbol> in #art. Use the doll's 300 × 440 coordinates.
-2. Add its ID, friendly name, color, and thumbnail viewBox to the catalog below.
-3. Keep category names unchanged so snapping and outfit rules continue to work.
-Everything is inline: no downloads, fonts, libraries, or internet required.
+1. Add artwork inside a <symbol> in #art using 300 × 440 coordinates.
+2. Add its ID, name, color, and thumbnail viewBox to the catalog.
+3. Keep category names unchanged so outfit rules continue to work.
+Everything is inline and works offline.
 -->
 <html lang="en">
 <head>
@@ -16,12 +16,13 @@ Everything is inline: no downloads, fonts, libraries, or internet required.
 *{box-sizing:border-box}
 body{margin:0}
 button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-button:focus-visible{outline:4px solid #7b61cb;outline-offset:4px}
+button:focus-visible,a:focus-visible{outline:4px solid #7b61cb;outline-offset:4px}
 header{text-align:center;padding:24px 16px 12px}
 h1{font-size:clamp(28px,5vw,42px);margin:0;color:#6750a4;letter-spacing:-1.5px}
 header p{margin:8px 0;color:#7b7186}
 main{max-width:1050px;margin:auto;padding:12px 20px 24px}
-.workspace{display:grid;grid-template-columns:1fr 350px;gap:24px;align-items:start}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:24px;align-items:start}
+.workspace>*{min-width:0}
 .stage-wrap{position:relative;border-radius:36px;background:#e6f5ee;border:5px solid white;box-shadow:0 10px 0 #dfebe4;overflow:hidden}
 .stage-wrap::before,.stage-wrap::after{position:absolute;font-size:38px;pointer-events:none;color:#a4d7c1}
 .stage-wrap::before{content:"✦";top:12%;left:10%;transform:rotate(12deg)}
@@ -35,10 +36,10 @@ main{max-width:1050px;margin:auto;padding:12px 20px 24px}
 .tabs{display:flex;gap:8px;overflow:auto;padding:3px 3px 12px;scrollbar-width:thin}
 .tab{border:0;border-radius:18px;padding:10px 13px;background:#f4f0fa;color:#71647e;white-space:nowrap;font-size:14px;font-weight:700;min-height:44px}
 .tab[aria-selected=true]{background:#775bc0;color:white}
-.items{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
-.item{border:3px solid transparent;background:var(--tile);border-radius:22px;padding:10px 4px 8px;touch-action:none;user-select:none;position:relative;color:#53495e}
+.items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+.item{min-width:0;border:3px solid transparent;background:var(--tile);border-radius:22px;padding:10px 4px 8px;touch-action:none;user-select:none;-webkit-touch-callout:none;position:relative;color:#53495e}
 .item svg{width:100%;height:104px;display:block;pointer-events:none}
-.item span{display:block;font-size:12px;font-weight:750;margin-top:8px}
+.item span{display:block;overflow-wrap:anywhere;font-size:12px;font-weight:750;margin-top:8px}
 .item.worn{border-color:#8264c7}
 .item.worn::after{content:"✓";position:absolute;top:5px;right:5px;border-radius:50%;background:#775bc0;color:white;width:21px;height:21px;font-size:14px}
 .tip{font-size:13px;line-height:1.6;text-align:center;color:#8b8096;margin:18px 0 2px}
@@ -54,12 +55,21 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
 .pop{transform-box:fill-box;transform-origin:center;animation:pop .28s ease-out}
 @keyframes pop{0%{transform:scale(.88);opacity:.3}65%{transform:scale(1.035)}100%{transform:scale(1);opacity:1}}
 @media(max-width:720px){
- header{padding-top:18px}main{padding:8px 14px 18px}
- .workspace{grid-template-columns:1fr;gap:20px}
+ header{padding-top:18px}
+ main{padding:8px 14px 18px}
+ .workspace{grid-template-columns:minmax(0,1fr);gap:20px}
  #stage{height:43vh;min-height:300px}
- .panel{padding:16px}.item svg{height:82px}
- .controls{gap:8px;margin-top:20px}.action{padding:12px 13px;font-size:14px}
+ .panel{padding:16px}
+ .item svg{height:82px}
+ .controls{gap:8px;margin-top:20px}
+ .action{padding:12px 13px;font-size:14px}
 }
+dialog{width:min(94vw,500px);max-height:90dvh;overflow:auto;border:0;border-radius:24px;padding:20px;color:#433955;text-align:center;background:#fff6ed}
+dialog::backdrop{background:#43395588}
+dialog h2{margin-top:0}
+dialog p{font-size:14px;line-height:1.6}
+#saved-image{display:block;max-width:100%;width:auto;max-height:45dvh;margin:auto;border-radius:12px}
+a.action{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important}}
 </style>
 </head>
@@ -69,32 +79,45 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
   <p>A little doll. A whole lot of you.</p>
 </header>
 
-<!-- Artwork is defined once. Both thumbnails and the stage reference it. -->
+<!-- Shared artwork: thumbnails and the doll reuse these symbols. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"
      aria-hidden="true" style="position:absolute;overflow:hidden">
 <defs id="art">
   <symbol id="doll" viewBox="0 0 300 440">
-    <!-- Neutral base with a simple under-outfit. -->
+    <!-- Slimmer body, hips, and legs fit inside the clothes. -->
     <g fill="#e7b28f">
-      <path d="M128 158h44l10 91-18 26h-28l-18-26z"/>
+      <path d="M134 158h32l3 71 6 31-12 15h-26l-12-15 6-31z"/>
       <rect x="138" y="132" width="24" height="36" rx="11"/>
       <path d="M126 164q-10-5-16 9l-28 76q-4 14 6 18 10 4 15-9l30-68z"/>
       <path d="M174 164q10-5 16 9l28 76q4 14-6 18-10 4-15-9l-30-68z"/>
-      <rect x="123" y="260" width="23" height="132" rx="11"/>
-      <rect x="154" y="260" width="23" height="132" rx="11"/>
-      <ellipse cx="131" cy="395" rx="18" ry="11"/>
-      <ellipse cx="169" cy="395" rx="18" ry="11"/>
-      <circle cx="111" cy="108" r="9"/><circle cx="189" cy="108" r="9"/>
+      <rect x="126" y="260" width="18" height="132" rx="11"/>
+      <rect x="156" y="260" width="18" height="132" rx="11"/>
+      <circle cx="111" cy="108" r="9"/>
+      <circle cx="189" cy="108" r="9"/>
       <ellipse cx="150" cy="102" rx="41" ry="49"/>
     </g>
-    <path d="M126 169q24 13 48 0l5 67h-58z" fill="#fff4e8"/>
-    <path d="M121 239h58l-3 36h-22l-4-14-4 14h-22z" fill="#fff4e8"/>
-    <g fill="#594439"><circle cx="136" cy="105" r="3"/><circle cx="164" cy="105" r="3"/></g>
+    <path d="M135 170q15 9 30 0l3 65h-36z" fill="#fff4e8"/>
+    <path d="M128 239h44l1 33h-15l-8-17-8 17h-15z" fill="#fff4e8"/>
+    <g fill="#594439">
+      <circle cx="136" cy="105" r="3"/>
+      <circle cx="164" cy="105" r="3"/>
+    </g>
     <path d="M140 123q10 10 20 0" fill="none" stroke="#a05f50" stroke-width="3" stroke-linecap="round"/>
-    <g fill="#e99083" opacity=".6"><ellipse cx="126" cy="119" rx="7" ry="4"/><ellipse cx="174" cy="119" rx="7" ry="4"/></g>
+    <g fill="#e99083" opacity=".6">
+      <ellipse cx="126" cy="119" rx="7" ry="4"/>
+      <ellipse cx="174" cy="119" rx="7" ry="4"/>
+    </g>
   </symbol>
 
-  <!-- Anchor regions: hair 150,90; torso 150,200; hips 150,275;
+  <!-- Bare feet hide when shoes are worn. -->
+  <symbol id="bare-feet" viewBox="0 0 300 440">
+    <g fill="#e7b28f">
+      <ellipse cx="132" cy="398" rx="13" ry="7"/>
+      <ellipse cx="168" cy="398" rx="13" ry="7"/>
+    </g>
+  </symbol>
+
+  <!-- Anchors: hair 150,90; torso 150,200; hips 150,275;
        dress 150,235; feet 150,395; glasses 150,105. -->
   <symbol id="hair-bob" viewBox="0 0 300 440">
     <path d="M105 118V87q0-44 45-44t45 44v45l-18 10V91q-20-1-35-19-7 18-24 22v47l-13-9z" fill="#654235"/>
@@ -103,7 +126,8 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
   </symbol>
   <symbol id="hair-buns" viewBox="0 0 300 440">
     <g fill="#3f353e">
-      <circle cx="107" cy="64" r="23"/><circle cx="193" cy="64" r="23"/>
+      <circle cx="107" cy="64" r="23"/>
+      <circle cx="193" cy="64" r="23"/>
       <path d="M107 105V85q0-42 43-42t43 42v20l-12-16q-20 1-31-18-11 19-31 18z"/>
     </g>
     <path d="M91 80l24 5m70 0 24-5" stroke="#e896b7" stroke-width="7" stroke-linecap="round"/>
@@ -152,7 +176,7 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
   <symbol id="dress-stars" viewBox="0 0 300 440">
     <path d="M132 158q18 13 36 0l21 18-15 26-2 27 35 94q-57 17-114 0l35-94-2-27-15-26z" fill="#8c8bce"/>
     <g fill="#fff0b2">
-      <path id="little-star" d="m143 191 3-8 3 8 8 1-6 5 2 8-7-4-7 4 2-8-6-5z"/>
+      <path d="m143 191 3-8 3 8 8 1-6 5 2 8-7-4-7 4 2-8-6-5z"/>
       <path d="m127 274 3-8 3 8 8 1-6 5 2 8-7-4-7 4 2-8-6-5zm42 21 3-8 3 8 8 1-6 5 2 8-7-4-7 4 2-8-6-5z"/>
     </g>
   </symbol>
@@ -160,21 +184,29 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
     <path d="M132 158q18 13 36 0l21 18-15 26-2 27 35 94q-57 17-114 0l35-94-2-27-15-26z" fill="#70bdaa"/>
     <path d="M128 230h44" stroke="#3c9789" stroke-width="6"/>
     <g fill="#ffebca">
-      <circle cx="133" cy="274" r="9"/><circle cx="173" cy="297" r="9"/><circle cx="150" cy="191" r="8"/>
+      <circle cx="133" cy="274" r="9"/>
+      <circle cx="173" cy="297" r="9"/>
+      <circle cx="150" cy="191" r="8"/>
     </g>
-    <g fill="#efad66"><circle cx="133" cy="274" r="4"/><circle cx="173" cy="297" r="4"/><circle cx="150" cy="191" r="3"/></g>
+    <g fill="#efad66">
+      <circle cx="133" cy="274" r="4"/>
+      <circle cx="173" cy="297" r="4"/>
+      <circle cx="150" cy="191" r="3"/>
+    </g>
   </symbol>
 
   <symbol id="shoes-sneakers" viewBox="0 0 300 440">
     <g fill="#f8fafb" stroke="#cfdbdf" stroke-width="2">
-      <path d="M121 384h22l3 19h-36q-2-12 11-14z"/><path d="M157 384h22v5q13 2 11 14h-36z"/>
+      <path d="M121 384h22l3 19h-36q-2-12 11-14z"/>
+      <path d="M157 384h22v5q13 2 11 14h-36z"/>
     </g>
     <path d="M111 402h35m8 0h35" stroke="#ae92ce" stroke-width="5"/>
     <path d="M125 390h12m26 0h12" stroke="#ae92ce" stroke-width="3" stroke-linecap="round"/>
   </symbol>
   <symbol id="shoes-boots" viewBox="0 0 300 440">
     <g fill="#d59959">
-      <path d="M120 362h25v43h-37v-9q0-9 12-9z"/><path d="M155 362h25v25q12 0 12 9v9h-37z"/>
+      <path d="M120 362h25v43h-37v-9q0-9 12-9z"/>
+      <path d="M155 362h25v25q12 0 12 9v9h-37z"/>
     </g>
     <path d="M119 367h27m8 0h27" stroke="#f8d18b" stroke-width="8"/>
     <path d="M108 404h37m10 0h37" stroke="#9c6c43" stroke-width="4"/>
@@ -186,7 +218,8 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
 
   <symbol id="glasses-round" viewBox="0 0 300 440">
     <g fill="#8cbed0" fill-opacity=".85" stroke="#f9c95e" stroke-width="4">
-      <circle cx="133" cy="105" r="13"/><circle cx="167" cy="105" r="13"/>
+      <circle cx="133" cy="105" r="13"/>
+      <circle cx="167" cy="105" r="13"/>
       <path d="M146 104h8m-34-3-7-3m67 3 7-3" fill="none"/>
     </g>
   </symbol>
@@ -210,22 +243,24 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
   <div class="workspace">
     <section class="stage-wrap" aria-label="Paper doll dressing stage">
       <div class="stage-label">YOUR LITTLE CREATION</div>
-      <svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 440"
-           role="img" aria-label="Your paper doll">
+      <svg id="stage" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 300 440" role="img" aria-label="Your paper doll">
         <title>Your paper doll</title>
         <use href="#doll"/>
-        <!-- Fixed coordinates keep all clothing snapped to its category anchor. -->
+        <use id="feet" href="#bare-feet"/>
         <g id="outfit"></g>
       </svg>
       <div class="floor">Made to mix, match & imagine ♡</div>
     </section>
+
     <section class="panel" aria-label="Wardrobe">
       <h2>The dress-up box</h2>
       <div class="tabs" role="tablist" aria-label="Clothing categories"></div>
       <div class="items" id="items" role="tabpanel" aria-label="Hair options"></div>
-      <p class="tip">Drag a little look onto your doll.<br>Or just tap it to try it on!</p>
+      <p class="tip">Drag a little look onto your doll.<br>Pick it up, move it, and let go!</p>
     </section>
   </div>
+
   <div class="controls" aria-label="Outfit controls">
     <button class="action" id="clear">✕ Clear</button>
     <button class="action primary" id="random">✦ Randomize</button>
@@ -235,6 +270,18 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
   </div>
   <p id="announcement" role="status" aria-live="polite">What will you wear today?</p>
 </main>
+
+<dialog id="save-dialog" aria-labelledby="save-title">
+  <h2 id="save-title">Keep your little look</h2>
+  <p>Download your JPG, or share it to save it to Photos.<br>You can also press and hold the picture to save it.</p>
+  <img id="saved-image" alt="Your dressed paper doll on a white background">
+  <div class="controls">
+    <a class="action save" id="download" download="my-paper-doll.jpg">↓ Download JPG</a>
+    <button class="action primary" id="share" hidden>Share / Save image</button>
+    <button class="action" id="close-save">Done</button>
+  </div>
+</dialog>
+
 <footer>A tiny world of endless outfits.</footer>
 
 <script>
@@ -243,31 +290,62 @@ footer{text-align:center;color:#9a899a;font-size:12px;padding:0 16px 20px}
 // Thumbnail viewBoxes crop the same artwork used on the doll.
 const catalog = {
   hair: {
-    label:"Hair", box:"80 35 140 120",
-    items:[["hair-bob","Sunny bob","#fff0d4"],["hair-buns","Space buns","#f4e7f6"],["hair-wave","Soft waves","#e8f3ec"]]
+    label: "Hair",
+    box: "80 35 140 120",
+    items: [
+      ["hair-bob", "Sunny bob", "#fff0d4"],
+      ["hair-buns", "Space buns", "#f4e7f6"],
+      ["hair-wave", "Soft waves", "#e8f3ec"]
+    ]
   },
   tops: {
-    label:"Tops", box:"88 150 124 98",
-    items:[["top-tee","Love tee","#f0e9fa"],["top-stripe","Sea stripes","#e5f3ee"],["top-sun","Sunshine","#fff2d5"]]
+    label: "Tops",
+    box: "88 150 124 98",
+    items: [
+      ["top-tee", "Love tee", "#f0e9fa"],
+      ["top-stripe", "Sea stripes", "#e5f3ee"],
+      ["top-sun", "Sunshine", "#fff2d5"]
+    ]
   },
   bottoms: {
-    label:"Bottoms", box:"95 230 110 160",
-    items:[["bottom-shorts","Blue shorts","#e6f1fa"],["bottom-skirt","Twirl skirt","#fbe9f0"],["bottom-pants","Cozy pants","#e9f0e8"]]
+    label: "Bottoms",
+    box: "95 230 110 160",
+    items: [
+      ["bottom-shorts", "Blue shorts", "#e6f1fa"],
+      ["bottom-skirt", "Twirl skirt", "#fbe9f0"],
+      ["bottom-pants", "Cozy pants", "#e9f0e8"]
+    ]
   },
   dresses: {
-    label:"Dresses", box:"86 150 128 190",
-    items:[["dress-peach","Peach bow","#fff0e6"],["dress-stars","Star party","#eeecfa"],["dress-garden","Little garden","#e5f4ec"]]
+    label: "Dresses",
+    box: "86 150 128 190",
+    items: [
+      ["dress-peach", "Peach bow", "#fff0e6"],
+      ["dress-stars", "Star party", "#eeecfa"],
+      ["dress-garden", "Little garden", "#e5f4ec"]
+    ]
   },
   shoes: {
-    label:"Shoes", box:"100 350 100 64",
-    items:[["shoes-sneakers","Sneakers","#eeeafa"],["shoes-boots","Rain boots","#fff0d9"],["shoes-pink","Ballet flats","#fce9f1"]]
+    label: "Shoes",
+    box: "100 350 100 64",
+    items: [
+      ["shoes-sneakers", "Sneakers", "#eeeafa"],
+      ["shoes-boots", "Rain boots", "#fff0d9"],
+      ["shoes-pink", "Ballet flats", "#fce9f1"]
+    ]
   },
   glasses: {
-    label:"Sunglasses", box:"105 84 90 45",
-    items:[["glasses-round","Round rays","#fff3da"],["glasses-heart","Heart eyes","#fce9f1"],["glasses-cool","Cool shades","#e7eef9"]]
+    label: "Sunglasses",
+    box: "105 84 90 45",
+    items: [
+      ["glasses-round", "Round rays", "#fff3da"],
+      ["glasses-heart", "Heart eyes", "#fce9f1"],
+      ["glasses-cool", "Cool shades", "#e7eef9"]
+    ]
   }
 };
-const layers = ["bottoms","tops","dresses","shoes","hair","glasses"];
+
+const layers = ["bottoms", "tops", "dresses", "shoes", "hair", "glasses"];
 const stage = document.querySelector("#stage");
 const outfit = document.querySelector("#outfit");
 const panel = document.querySelector("#items");
@@ -276,232 +354,370 @@ const status = document.querySelector("#announcement");
 const undo = document.querySelector("#undo");
 const redo = document.querySelector("#redo");
 const NS = "http://www.w3.org/2000/svg";
+
 let state = {};
-let history = [{}], position = 0, category = "hair";
-let drag = null, suppressClick = false;
+let history = [{}];
+let position = 0;
+let category = "hair";
+let drag = null;
 
 function svgUse(id) {
-  const use = document.createElementNS(NS,"use");
-  use.setAttribute("href","#"+id);
+  const use = document.createElementNS(NS, "use");
+  use.setAttribute("href", "#" + id);
+
+  // Explicit dimensions preserve coordinates in cropped thumbnails.
+  use.setAttribute("width", "300");
+  use.setAttribute("height", "440");
   return use;
 }
-function announce(message) { status.textContent = message; }
 
-// Each history entry is a small object of symbol IDs, never a copy of artwork.
+function announce(message) {
+  status.textContent = message;
+}
+
+// History stores only symbol IDs, never copies of the SVG artwork.
 function commit(next, message) {
   if (JSON.stringify(state) === JSON.stringify(next)) {
     announce(message);
     return;
   }
+
   state = {...next};
-  history = history.slice(0,position+1);
+  history = history.slice(0, position + 1);
   history.push({...state});
-  if (history.length > 51) history.shift(); // 50 undo steps.
-  position = history.length-1;
+
+  // Keep up to 50 undo steps.
+  if (history.length > 51) history.shift();
+
+  position = history.length - 1;
   render(true);
   announce(message);
 }
-function wear(cat,id,name) {
+
+function wear(cat, id, name) {
   const next = {...state};
+
   if (cat === "dresses") {
     delete next.tops;
     delete next.bottoms;
   } else if (cat === "tops" || cat === "bottoms") {
     delete next.dresses;
   }
+
   next[cat] = id;
-  commit(next,name+" — looking lovely!");
+  commit(next, name + " — looking lovely!");
 }
-function render(animate=false) {
+
+function render(animate = false) {
+  document.querySelector("#feet").setAttribute(
+    "display", state.shoes ? "none" : "inline"
+  );
+
   outfit.replaceChildren();
+
   for (const cat of layers) {
     if (!state[cat]) continue;
-    const group = document.createElementNS(NS,"g");
+
+    const group = document.createElementNS(NS, "g");
     group.append(svgUse(state[cat]));
+
     if (animate) group.classList.add("pop");
     outfit.append(group);
   }
+
   undo.disabled = position === 0;
-  redo.disabled = position === history.length-1;
+  redo.disabled = position === history.length - 1;
+
   for (const button of panel.querySelectorAll(".item")) {
     const worn = state[category] === button.dataset.id;
-    button.classList.toggle("worn",worn);
-    button.setAttribute("aria-pressed",String(worn));
+    button.classList.toggle("worn", worn);
+    button.setAttribute("aria-pressed", String(worn));
   }
 }
-function selectCategory(cat, focus=false) {
+
+function selectCategory(cat, focus = false) {
   category = cat;
+
   for (const button of tabs.children) {
     const selected = button.dataset.category === cat;
-    button.setAttribute("aria-selected",String(selected));
+    button.setAttribute("aria-selected", String(selected));
     button.tabIndex = selected ? 0 : -1;
+
     if (selected && focus) button.focus();
   }
-  panel.setAttribute("aria-label",catalog[cat].label+" options");
-  panel.setAttribute("aria-labelledby","tab-"+cat);
+
+  panel.setAttribute("aria-label", catalog[cat].label + " options");
+  panel.setAttribute("aria-labelledby", "tab-" + cat);
   panel.replaceChildren();
-  for (const [id,name,color] of catalog[cat].items) {
+
+  for (const [id, name, color] of catalog[cat].items) {
     const button = document.createElement("button");
     button.className = "item";
     button.dataset.id = id;
-    button.style.setProperty("--tile",color);
-    button.setAttribute("aria-label","Wear "+name);
-    const svg = document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox",catalog[cat].box);
-    svg.setAttribute("aria-hidden","true");
+    button.style.setProperty("--tile", color);
+    button.setAttribute("aria-label", "Wear " + name);
+
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", catalog[cat].box);
+    svg.setAttribute("aria-hidden", "true");
     svg.append(svgUse(id));
+
     const label = document.createElement("span");
     label.textContent = name;
-    button.append(svg,label);
+    button.append(svg, label);
 
-    button.addEventListener("click",event => {
-      if (suppressClick && event.detail !== 0) return;
-      wear(cat,id,name);
+    button.addEventListener("click", event => {
+      // Keyboard and assistive activation remain available.
+      // Mouse and touch users dress the doll by dragging.
+      if (event.detail === 0) wear(cat, id, name);
+      else announce("Drag this look onto your doll to try it on!");
     });
-    button.addEventListener("pointerdown",event => {
+
+    button.addEventListener("pointerdown", event => {
       if (!event.isPrimary || event.button !== 0 || drag) return;
-      suppressClick = false;
-      drag = {pointer:event.pointerId,button,cat,id,name,
-        x:event.clientX,y:event.clientY,moved:false,ghost:null};
+
+      event.preventDefault();
+      drag = {
+        pointer: event.pointerId,
+        button,
+        cat,
+        id,
+        name,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+        ghost: null
+      };
+
       button.setPointerCapture(event.pointerId);
     });
-    button.addEventListener("pointermove",moveDrag);
-    button.addEventListener("pointerup",finishDrag);
-    button.addEventListener("pointercancel",cancelDrag);
-    button.addEventListener("lostpointercapture",cancelDrag);
+
+    button.addEventListener("pointermove", moveDrag);
+    button.addEventListener("pointerup", finishDrag);
+    button.addEventListener("pointercancel", cancelDrag);
+    button.addEventListener("lostpointercapture", cancelDrag);
     panel.append(button);
   }
+
   render();
 }
-for (const [cat,data] of Object.entries(catalog)) {
+
+for (const [cat, data] of Object.entries(catalog)) {
   const button = document.createElement("button");
   button.className = "tab";
-  button.id = "tab-"+cat;
+  button.id = "tab-" + cat;
   button.dataset.category = cat;
   button.textContent = data.label;
-  button.setAttribute("role","tab");
-  button.setAttribute("aria-controls","items");
-  button.addEventListener("click",() => selectCategory(cat));
-  button.addEventListener("keydown",event => {
+  button.setAttribute("role", "tab");
+  button.setAttribute("aria-controls", "items");
+
+  button.addEventListener("click", () => selectCategory(cat));
+
+  button.addEventListener("keydown", event => {
     const keys = Object.keys(catalog);
     let index = keys.indexOf(category);
-    if (event.key === "ArrowRight") index = (index+1)%keys.length;
-    else if (event.key === "ArrowLeft") index = (index+keys.length-1)%keys.length;
-    else if (event.key === "Home") index = 0;
-    else if (event.key === "End") index = keys.length-1;
-    else return;
+
+    if (event.key === "ArrowRight") {
+      index = (index + 1) % keys.length;
+    } else if (event.key === "ArrowLeft") {
+      index = (index + keys.length - 1) % keys.length;
+    } else if (event.key === "Home") {
+      index = 0;
+    } else if (event.key === "End") {
+      index = keys.length - 1;
+    } else {
+      return;
+    }
+
     event.preventDefault();
-    selectCategory(keys[index],true);
+    selectCategory(keys[index], true);
   });
+
   tabs.append(button);
 }
 
-// Pointer capture keeps a drag active when a finger leaves the thumbnail.
+// Pointer capture keeps dragging active outside the original thumbnail.
 function overStage(event) {
   const rect = stage.getBoundingClientRect();
-  return event.clientX >= rect.left && event.clientX <= rect.right &&
-         event.clientY >= rect.top && event.clientY <= rect.bottom;
+  return (
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom
+  );
 }
+
 function moveDrag(event) {
   if (!drag || event.pointerId !== drag.pointer) return;
-  if (!drag.moved && Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>7) {
+
+  if (
+    !drag.moved &&
+    Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 7
+  ) {
     drag.moved = true;
     drag.ghost = drag.button.querySelector("svg").cloneNode(true);
     drag.ghost.classList.add("ghost");
     document.body.append(drag.ghost);
   }
+
   if (!drag.moved) return;
-  drag.ghost.style.left = event.clientX+"px";
-  drag.ghost.style.top = event.clientY+"px";
-  stage.parentElement.classList.toggle("over",overStage(event));
+
+  drag.ghost.style.left = event.clientX + "px";
+  drag.ghost.style.top = event.clientY + "px";
+  stage.parentElement.classList.toggle("over", overStage(event));
 }
+
 function cleanupDrag() {
   if (!drag) return;
   drag.ghost?.remove();
   stage.parentElement.classList.remove("over");
   drag = null;
 }
+
 function finishDrag(event) {
   if (!drag || event.pointerId !== drag.pointer) return;
+
   const current = drag;
+
   if (current.moved) {
-    suppressClick = true;
-    if (overStage(event)) wear(current.cat,current.id,current.name);
-    else announce("Try dropping your look onto the doll!");
-    // Ignore the click synthesized after a completed pointer drag.
-    setTimeout(() => { suppressClick = false; },350);
+    if (overStage(event)) {
+      wear(current.cat, current.id, current.name);
+    } else {
+      announce("Try dropping your look onto the doll!");
+    }
   }
+
   cleanupDrag();
 }
+
 function cancelDrag(event) {
   if (drag && event.pointerId === drag.pointer) cleanupDrag();
 }
 
-document.querySelector("#clear").onclick = () => commit({},"A fresh start!");
+document.querySelector("#clear").onclick = () => {
+  commit({}, "A fresh start!");
+};
+
 document.querySelector("#random").onclick = () => {
   const next = {};
-  const categories = Math.random()<.5
-    ? ["hair","dresses","shoes","glasses"]
-    : ["hair","tops","bottoms","shoes","glasses"];
+  const categories = Math.random() < .5
+    ? ["hair", "dresses", "shoes", "glasses"]
+    : ["hair", "tops", "bottoms", "shoes", "glasses"];
+
   for (const cat of categories) {
     const options = catalog[cat].items;
-    next[cat] = options[Math.floor(Math.random()*options.length)][0];
+    next[cat] = options[Math.floor(Math.random() * options.length)][0];
   }
-  commit(next,"Surprise! A brand-new little look.");
+
+  commit(next, "Surprise! A brand-new little look.");
 };
+
 undo.onclick = () => {
   if (position === 0) return;
   state = {...history[--position]};
   render(true);
   announce("One look back.");
 };
+
 redo.onclick = () => {
-  if (position === history.length-1) return;
+  if (position === history.length - 1) return;
   state = {...history[++position]};
   render(true);
   announce("Hello again, lovely look!");
 };
 
-// Export only the doll and outfit. Embed the shared definitions so the
-// serialized SVG is fully standalone, then paint it over a white canvas.
+// Generate the image first, then offer a direct tap for download/sharing.
+// Native mobile sharing needs that fresh user gesture.
+const saveDialog = document.querySelector("#save-dialog");
+const shareButton = document.querySelector("#share");
+let savedFile = null;
+
+document.querySelector("#close-save").onclick = () => {
+  saveDialog.close();
+};
+
+shareButton.onclick = async () => {
+  if (!savedFile) return;
+
+  try {
+    await navigator.share({
+      files: [savedFile],
+      title: "My paper doll"
+    });
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      announce("You can still download or press and hold your picture to save it.");
+    }
+  }
+};
+
 document.querySelector("#save").onclick = async () => {
   const button = document.querySelector("#save");
   button.disabled = true;
-  let url;
+
   try {
     const snapshot = stage.cloneNode(true);
-    snapshot.setAttribute("width","900");
-    snapshot.setAttribute("height","1320");
+    snapshot.setAttribute("width", "900");
+    snapshot.setAttribute("height", "1320");
     snapshot.removeAttribute("id");
-    snapshot.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
-    snapshot.querySelectorAll(".pop").forEach(node => node.removeAttribute("class"));
-    snapshot.insertBefore(document.querySelector("#art").cloneNode(true),snapshot.firstChild);
+
+    snapshot.querySelectorAll("[id]").forEach(node => {
+      node.removeAttribute("id");
+    });
+
+    // Do not export a partially animated outfit.
+    snapshot.querySelectorAll(".pop").forEach(node => {
+      node.removeAttribute("class");
+    });
+
+    // Include definitions so the SVG image is entirely self-contained.
+    snapshot.insertBefore(
+      document.querySelector("#art").cloneNode(true),
+      snapshot.firstChild
+    );
+
     const xml = new XMLSerializer().serializeToString(snapshot);
-    url = URL.createObjectURL(new Blob([xml],{type:"image/svg+xml;charset=utf-8"}));
     const image = new Image();
-    await new Promise((resolve,reject) => {
+
+    await new Promise((resolve, reject) => {
       image.onload = resolve;
       image.onerror = reject;
-      image.src = url;
+      image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
     });
+
     const canvas = document.createElement("canvas");
     canvas.width = 900;
     canvas.height = 1320;
+
     const context = canvas.getContext("2d");
     context.fillStyle = "#ffffff";
-    context.fillRect(0,0,canvas.width,canvas.height);
-    context.drawImage(image,0,0,canvas.width,canvas.height);
-    const link = document.createElement("a");
-    link.download = "my-paper-doll.jpg";
-    link.href = canvas.toDataURL("image/jpeg",.93);
-    document.body.append(link);
-    link.click();
-    link.remove();
-    announce("Your little look is ready to keep!");
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const jpg = canvas.toDataURL("image/jpeg", .93);
+    const blob = await new Promise(resolve => {
+      canvas.toBlob(resolve, "image/jpeg", .93);
+    });
+
+    if (!blob) throw new Error("Image not ready");
+
+    savedFile = new File([blob], "my-paper-doll.jpg", {
+      type: "image/jpeg"
+    });
+
+    document.querySelector("#saved-image").src = jpg;
+    document.querySelector("#download").href = jpg;
+
+    shareButton.hidden = !(
+      navigator.canShare &&
+      navigator.canShare({files: [savedFile]})
+    );
+
+    saveDialog.showModal();
+    announce("Your picture is ready! Choose how to save it.");
   } catch {
     announce("Your outfit is safe here. Tap Save to try again.");
   } finally {
-    if (url) URL.revokeObjectURL(url);
     button.disabled = false;
   }
 };
